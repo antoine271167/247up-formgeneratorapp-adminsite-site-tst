@@ -874,7 +874,7 @@ module.exports = ""
 /***/ 699:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"wrapper\" [style.padding-left]=\"isAuthenticated ? '225px':'0'\">\r\n    <app-navigation></app-navigation>\r\n    <router-outlet *ngIf=\"isAuthenticated\"></router-outlet>\r\n    <app-page-signin *ngIf=\"!isAuthenticated\"></app-page-signin>\r\n</div>"
+module.exports = "<div id=\"wrapper\" [style.padding-left]=\"isAuthenticated ? '225px':'0'\">\r\n    <app-navigation></app-navigation>\r\n    <section [style.display]=\"isAuthenticated ? 'initial' : 'none' \">\r\n        <router-outlet></router-outlet>\r\n    </section>\r\n    <app-page-signin *ngIf=\"!isAuthenticated\"></app-page-signin>\r\n</div>"
 
 /***/ }),
 
