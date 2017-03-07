@@ -716,8 +716,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var AppPageSigninComponent = (function () {
     function AppPageSigninComponent() {
     }
-    AppPageSigninComponent.prototype.ngOnInit = function () {
-    };
     AppPageSigninComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: "app-page-signin",
@@ -981,7 +979,7 @@ module.exports = ""
 /***/ 701:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"wrapper\" [style.padding-left]=\"isAuthenticated ? '':'0'\">\r\n    <app-navigation></app-navigation>\r\n    <section [style.display]=\"isAuthenticated ? 'initial' : 'none' \">\r\n        <router-outlet></router-outlet>\r\n    </section>\r\n    <app-page-signin *ngIf=\"!isAuthenticated\"></app-page-signin>\r\n</div>"
+module.exports = "<div id=\"wrapper\" [style.padding-left]=\"isAuthenticated ? '':'0'\">\r\n    <app-navigation></app-navigation>\r\n    <section [style.display]=\"isAuthenticated ? 'initial' : 'none' \">\r\n        <router-outlet></router-outlet>\r\n    </section>\r\n    <section [style.display]=\"isAuthenticated ? 'none' : 'initial' \">\r\n        <app-page-signin></app-page-signin>\r\n    </section>\r\n</div>"
 
 /***/ }),
 
