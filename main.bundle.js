@@ -1,12 +1,13 @@
 webpackJsonp([1,5],{
 
-/***/ 150:
+/***/ 104:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject__ = __webpack_require__(161);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__google_signin_service__ = __webpack_require__(334);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SigninService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -19,12 +20,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
+
 var SigninService = (function () {
-    function SigninService() {
+    function SigninService(_googleSigninService) {
+        this._googleSigninService = _googleSigninService;
         this._isAuthenticated = new __WEBPACK_IMPORTED_MODULE_1_rxjs_BehaviorSubject__["BehaviorSubject"](false); // false is your initial value
         this.isAuthenticated$ = this._isAuthenticated.asObservable();
         this._idToken = "";
         this._userDisplayName = "";
+        _googleSigninService.signinService = this;
         if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["c" /* isDevMode */])()) {
             this._userDisplayName = "John Doe";
             this._idToken =
@@ -32,10 +36,14 @@ var SigninService = (function () {
             this._isAuthenticated.next(true);
         }
     }
+    SigninService.prototype.renderGoogleButton = function () {
+        this._googleSigninService.renderButton();
+    };
     SigninService.prototype.signOut = function () {
         this._userDisplayName = "";
         this._idToken = "";
         this._isAuthenticated.next(false);
+        this._googleSigninService.signOut();
     };
     Object.defineProperty(SigninService.prototype, "isAuthenticated", {
         get: function () {
@@ -69,15 +77,16 @@ var SigninService = (function () {
     });
     SigninService = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Injectable */])(), 
-        __metadata('design:paramtypes', [])
+        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__google_signin_service__["a" /* GoogleSigninService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_2__google_signin_service__["a" /* GoogleSigninService */]) === 'function' && _a) || Object])
     ], SigninService);
     return SigninService;
+    var _a;
 }());
 //# sourceMappingURL=D:/TfsOnlineGit/247UP - FormGeneratorApp - AdminSite/src/adminsite/src/signin.service.js.map
 
 /***/ }),
 
-/***/ 219:
+/***/ 333:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -136,7 +145,87 @@ var BaseComponent = (function () {
 
 /***/ }),
 
-/***/ 387:
+/***/ 334:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(327);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return GoogleSigninService; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+var GoogleSigninService = (function () {
+    function GoogleSigninService(_zone, _router) {
+        var _this = this;
+        this._zone = _zone;
+        this._router = _router;
+        this._googleLoginButtonId = "google-login-button";
+        this.onGoogleLoginSuccess = function (loggedInUser) {
+            _this._zone.run(function () {
+                _this._signinService.idToken = loggedInUser.getAuthResponse().id_token;
+                _this._signinService.userDisplayName = loggedInUser.getBasicProfile().getName();
+                _this._signinService.isAuthenticated = true;
+                //console.log(`idToken: ${this.signinService.idToken}`);
+                //console.log(`userDisplayName: ${this.signinService.userDisplayName}`);
+            });
+        };
+        //
+    }
+    Object.defineProperty(GoogleSigninService.prototype, "signinService", {
+        get: function () {
+            return this._signinService;
+        },
+        set: function (value) {
+            this._signinService = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    GoogleSigninService.prototype.renderButton = function () {
+        gapi.signin2.render(this._googleLoginButtonId, {
+            "onSuccess": this.onGoogleLoginSuccess,
+            "scope": "profile",
+            "theme": "light",
+            "width": 220,
+            "height": 50,
+            "longtitle": true
+        });
+    };
+    GoogleSigninService.prototype.signOut = function () {
+        var _this = this;
+        if (gapi.auth2) {
+            var auth2 = gapi.auth2.getAuthInstance();
+            auth2.signOut().then(function () {
+                _this._zone.run(function () {
+                    _this._router.navigate([""]);
+                });
+            });
+        }
+        else {
+            this._router.navigate([""]);
+        }
+    };
+    GoogleSigninService = __decorate([
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Injectable */])(), 
+        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* NgZone */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_0__angular_core__["e" /* NgZone */]) === 'function' && _a) || Object, (typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */]) === 'function' && _b) || Object])
+    ], GoogleSigninService);
+    return GoogleSigninService;
+    var _a, _b;
+}());
+//# sourceMappingURL=D:/TfsOnlineGit/247UP - FormGeneratorApp - AdminSite/src/adminsite/src/google-signin.service.js.map
+
+/***/ }),
+
+/***/ 389:
 /***/ (function(module, exports) {
 
 function webpackEmptyContext(req) {
@@ -145,20 +234,20 @@ function webpackEmptyContext(req) {
 webpackEmptyContext.keys = function() { return []; };
 webpackEmptyContext.resolve = webpackEmptyContext;
 module.exports = webpackEmptyContext;
-webpackEmptyContext.id = 387;
+webpackEmptyContext.id = 389;
 
 
 /***/ }),
 
-/***/ 388:
+/***/ 390:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(481);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(483);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__environments_environment__ = __webpack_require__(525);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_app_module__ = __webpack_require__(513);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__environments_environment__ = __webpack_require__(527);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_app_module__ = __webpack_require__(514);
 
 
 
@@ -171,13 +260,13 @@ __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dyna
 
 /***/ }),
 
-/***/ 512:
+/***/ 513:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__base_component__ = __webpack_require__(219);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__signin_service__ = __webpack_require__(150);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__base_component__ = __webpack_require__(333);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__signin_service__ = __webpack_require__(104);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppComponent; });
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -210,8 +299,8 @@ var AppComponent = (function (_super) {
     AppComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: "app-root",
-            template: __webpack_require__(699),
-            styles: [__webpack_require__(685)]
+            template: __webpack_require__(701),
+            styles: [__webpack_require__(687)]
         }), 
         __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__signin_service__["a" /* SigninService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_2__signin_service__["a" /* SigninService */]) === 'function' && _a) || Object])
     ], AppComponent);
@@ -222,28 +311,30 @@ var AppComponent = (function (_super) {
 
 /***/ }),
 
-/***/ 513:
+/***/ 514:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(147);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(148);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_forms__ = __webpack_require__(471);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__(477);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__app_component__ = __webpack_require__(512);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__navigation_app_navigation_app_navigation_component__ = __webpack_require__(514);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__angular_router__ = __webpack_require__(501);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__navigation_app_vert_navigation_item_app_vert_navigation_item_component__ = __webpack_require__(515);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__signin_service__ = __webpack_require__(150);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__pages_app_page_app_page_component__ = __webpack_require__(523);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__pages_app_page_apps_app_page_apps_component__ = __webpack_require__(516);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__pages_app_page_datasources_app_page_datasources_component__ = __webpack_require__(517);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__pages_app_page_models_app_page_models_component__ = __webpack_require__(520);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__pages_app_page_views_app_page_views_component__ = __webpack_require__(522);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__pages_app_page_lists_app_page_lists_component__ = __webpack_require__(519);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__pages_app_page_forms_app_page_forms_component__ = __webpack_require__(518);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__pages_app_page_signin_app_page_signin_component__ = __webpack_require__(521);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__signin_signin_component__ = __webpack_require__(524);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_forms__ = __webpack_require__(473);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__(479);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__app_component__ = __webpack_require__(513);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__navigation_app_navigation_app_navigation_component__ = __webpack_require__(515);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__angular_router__ = __webpack_require__(327);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__navigation_app_vert_navigation_item_app_vert_navigation_item_component__ = __webpack_require__(516);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__signin_service__ = __webpack_require__(104);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__google_signin_service__ = __webpack_require__(334);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__signedin_guard_service__ = __webpack_require__(525);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__pages_app_page_app_page_component__ = __webpack_require__(524);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__pages_app_page_apps_app_page_apps_component__ = __webpack_require__(517);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__pages_app_page_datasources_app_page_datasources_component__ = __webpack_require__(518);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__pages_app_page_models_app_page_models_component__ = __webpack_require__(521);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__pages_app_page_views_app_page_views_component__ = __webpack_require__(523);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__pages_app_page_lists_app_page_lists_component__ = __webpack_require__(520);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__pages_app_page_forms_app_page_forms_component__ = __webpack_require__(519);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__pages_app_page_signin_app_page_signin_component__ = __webpack_require__(522);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__signin_signin_component__ = __webpack_require__(526);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -272,15 +363,17 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
+
 var appRoutes = [
-    { path: "", component: __WEBPACK_IMPORTED_MODULE_9__pages_app_page_app_page_component__["a" /* AppPageComponent */] },
-    { path: "apps", component: __WEBPACK_IMPORTED_MODULE_10__pages_app_page_apps_app_page_apps_component__["a" /* AppPageAppsComponent */] },
-    { path: "datasources", component: __WEBPACK_IMPORTED_MODULE_11__pages_app_page_datasources_app_page_datasources_component__["a" /* AppPageDatasourcesComponent */] },
-    { path: "models", component: __WEBPACK_IMPORTED_MODULE_12__pages_app_page_models_app_page_models_component__["a" /* AppPageModelsComponent */] },
-    { path: "views", component: __WEBPACK_IMPORTED_MODULE_13__pages_app_page_views_app_page_views_component__["a" /* AppPageViewsComponent */] },
-    { path: "lists", component: __WEBPACK_IMPORTED_MODULE_14__pages_app_page_lists_app_page_lists_component__["a" /* AppPageListsComponent */] },
-    { path: "forms", component: __WEBPACK_IMPORTED_MODULE_15__pages_app_page_forms_app_page_forms_component__["a" /* AppPageFormsComponent */] },
-    { path: "signin", component: __WEBPACK_IMPORTED_MODULE_16__pages_app_page_signin_app_page_signin_component__["a" /* AppPageSigninComponent */] }
+    { path: "", component: __WEBPACK_IMPORTED_MODULE_11__pages_app_page_app_page_component__["a" /* AppPageComponent */] },
+    { path: "apps", component: __WEBPACK_IMPORTED_MODULE_12__pages_app_page_apps_app_page_apps_component__["a" /* AppPageAppsComponent */], canActivate: [__WEBPACK_IMPORTED_MODULE_10__signedin_guard_service__["a" /* SignedinGuardService */]] },
+    { path: "datasources", component: __WEBPACK_IMPORTED_MODULE_13__pages_app_page_datasources_app_page_datasources_component__["a" /* AppPageDatasourcesComponent */], canActivate: [__WEBPACK_IMPORTED_MODULE_10__signedin_guard_service__["a" /* SignedinGuardService */]] },
+    { path: "models", component: __WEBPACK_IMPORTED_MODULE_14__pages_app_page_models_app_page_models_component__["a" /* AppPageModelsComponent */], canActivate: [__WEBPACK_IMPORTED_MODULE_10__signedin_guard_service__["a" /* SignedinGuardService */]] },
+    { path: "views", component: __WEBPACK_IMPORTED_MODULE_15__pages_app_page_views_app_page_views_component__["a" /* AppPageViewsComponent */], canActivate: [__WEBPACK_IMPORTED_MODULE_10__signedin_guard_service__["a" /* SignedinGuardService */]] },
+    { path: "lists", component: __WEBPACK_IMPORTED_MODULE_16__pages_app_page_lists_app_page_lists_component__["a" /* AppPageListsComponent */], canActivate: [__WEBPACK_IMPORTED_MODULE_10__signedin_guard_service__["a" /* SignedinGuardService */]] },
+    { path: "forms", component: __WEBPACK_IMPORTED_MODULE_17__pages_app_page_forms_app_page_forms_component__["a" /* AppPageFormsComponent */], canActivate: [__WEBPACK_IMPORTED_MODULE_10__signedin_guard_service__["a" /* SignedinGuardService */]] },
+    { path: "signin", component: __WEBPACK_IMPORTED_MODULE_18__pages_app_page_signin_app_page_signin_component__["a" /* AppPageSigninComponent */], canActivate: [__WEBPACK_IMPORTED_MODULE_10__signedin_guard_service__["a" /* SignedinGuardService */]] }
 ];
 var AppModule = (function () {
     function AppModule() {
@@ -290,17 +383,17 @@ var AppModule = (function () {
             declarations: [
                 __WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */],
                 __WEBPACK_IMPORTED_MODULE_5__navigation_app_navigation_app_navigation_component__["a" /* AppNavigationComponent */],
-                __WEBPACK_IMPORTED_MODULE_9__pages_app_page_app_page_component__["a" /* AppPageComponent */],
-                __WEBPACK_IMPORTED_MODULE_10__pages_app_page_apps_app_page_apps_component__["a" /* AppPageAppsComponent */],
-                __WEBPACK_IMPORTED_MODULE_11__pages_app_page_datasources_app_page_datasources_component__["a" /* AppPageDatasourcesComponent */],
-                __WEBPACK_IMPORTED_MODULE_12__pages_app_page_models_app_page_models_component__["a" /* AppPageModelsComponent */],
-                __WEBPACK_IMPORTED_MODULE_13__pages_app_page_views_app_page_views_component__["a" /* AppPageViewsComponent */],
-                __WEBPACK_IMPORTED_MODULE_14__pages_app_page_lists_app_page_lists_component__["a" /* AppPageListsComponent */],
-                __WEBPACK_IMPORTED_MODULE_15__pages_app_page_forms_app_page_forms_component__["a" /* AppPageFormsComponent */],
+                __WEBPACK_IMPORTED_MODULE_11__pages_app_page_app_page_component__["a" /* AppPageComponent */],
+                __WEBPACK_IMPORTED_MODULE_12__pages_app_page_apps_app_page_apps_component__["a" /* AppPageAppsComponent */],
+                __WEBPACK_IMPORTED_MODULE_13__pages_app_page_datasources_app_page_datasources_component__["a" /* AppPageDatasourcesComponent */],
+                __WEBPACK_IMPORTED_MODULE_14__pages_app_page_models_app_page_models_component__["a" /* AppPageModelsComponent */],
+                __WEBPACK_IMPORTED_MODULE_15__pages_app_page_views_app_page_views_component__["a" /* AppPageViewsComponent */],
+                __WEBPACK_IMPORTED_MODULE_16__pages_app_page_lists_app_page_lists_component__["a" /* AppPageListsComponent */],
+                __WEBPACK_IMPORTED_MODULE_17__pages_app_page_forms_app_page_forms_component__["a" /* AppPageFormsComponent */],
                 __WEBPACK_IMPORTED_MODULE_7__navigation_app_vert_navigation_item_app_vert_navigation_item_component__["a" /* AppVertNavigationItemComponent */],
-                __WEBPACK_IMPORTED_MODULE_16__pages_app_page_signin_app_page_signin_component__["a" /* AppPageSigninComponent */],
-                __WEBPACK_IMPORTED_MODULE_16__pages_app_page_signin_app_page_signin_component__["a" /* AppPageSigninComponent */],
-                __WEBPACK_IMPORTED_MODULE_17__signin_signin_component__["a" /* SigninComponent */]
+                __WEBPACK_IMPORTED_MODULE_18__pages_app_page_signin_app_page_signin_component__["a" /* AppPageSigninComponent */],
+                __WEBPACK_IMPORTED_MODULE_18__pages_app_page_signin_app_page_signin_component__["a" /* AppPageSigninComponent */],
+                __WEBPACK_IMPORTED_MODULE_19__signin_signin_component__["a" /* SigninComponent */]
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
@@ -308,7 +401,7 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_3__angular_http__["a" /* HttpModule */],
                 __WEBPACK_IMPORTED_MODULE_6__angular_router__["a" /* RouterModule */].forRoot(appRoutes, { useHash: true })
             ],
-            providers: [__WEBPACK_IMPORTED_MODULE_8__signin_service__["a" /* SigninService */]],
+            providers: [__WEBPACK_IMPORTED_MODULE_9__google_signin_service__["a" /* GoogleSigninService */], __WEBPACK_IMPORTED_MODULE_8__signin_service__["a" /* SigninService */], __WEBPACK_IMPORTED_MODULE_10__signedin_guard_service__["a" /* SignedinGuardService */]],
             bootstrap: [__WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */]]
         }), 
         __metadata('design:paramtypes', [])
@@ -319,13 +412,13 @@ var AppModule = (function () {
 
 /***/ }),
 
-/***/ 514:
+/***/ 515:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__base_component__ = __webpack_require__(219);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__signin_service__ = __webpack_require__(150);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__base_component__ = __webpack_require__(333);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__signin_service__ = __webpack_require__(104);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppNavigationComponent; });
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -358,8 +451,8 @@ var AppNavigationComponent = (function (_super) {
     AppNavigationComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: "app-navigation",
-            template: __webpack_require__(700),
-            styles: [__webpack_require__(686)]
+            template: __webpack_require__(702),
+            styles: [__webpack_require__(688)]
         }), 
         __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__signin_service__["a" /* SigninService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_2__signin_service__["a" /* SigninService */]) === 'function' && _a) || Object])
     ], AppNavigationComponent);
@@ -370,7 +463,7 @@ var AppNavigationComponent = (function (_super) {
 
 /***/ }),
 
-/***/ 515:
+/***/ 516:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -402,24 +495,24 @@ var AppVertNavigationItemComponent = (function () {
         parentElement.removeChild(nativeElement);
     };
     __decorate([
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* Input */])(), 
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["H" /* Input */])(), 
         __metadata('design:type', String)
     ], AppVertNavigationItemComponent.prototype, "icon", void 0);
     __decorate([
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* Input */])(), 
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["H" /* Input */])(), 
         __metadata('design:type', String)
     ], AppVertNavigationItemComponent.prototype, "title", void 0);
     __decorate([
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* Input */])(), 
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["H" /* Input */])(), 
         __metadata('design:type', String)
     ], AppVertNavigationItemComponent.prototype, "link", void 0);
     AppVertNavigationItemComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: "app-vert-navigation-item",
-            template: __webpack_require__(701),
-            styles: [__webpack_require__(687)]
+            template: __webpack_require__(703),
+            styles: [__webpack_require__(689)]
         }), 
-        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* ElementRef */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_0__angular_core__["M" /* ElementRef */]) === 'function' && _a) || Object])
+        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["N" /* ElementRef */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_0__angular_core__["N" /* ElementRef */]) === 'function' && _a) || Object])
     ], AppVertNavigationItemComponent);
     return AppVertNavigationItemComponent;
     var _a;
@@ -428,7 +521,7 @@ var AppVertNavigationItemComponent = (function () {
 
 /***/ }),
 
-/***/ 516:
+/***/ 517:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -453,8 +546,8 @@ var AppPageAppsComponent = (function () {
     AppPageAppsComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: "app-page-apps",
-            template: __webpack_require__(702),
-            styles: [__webpack_require__(688)]
+            template: __webpack_require__(704),
+            styles: [__webpack_require__(690)]
         }), 
         __metadata('design:paramtypes', [])
     ], AppPageAppsComponent);
@@ -464,7 +557,7 @@ var AppPageAppsComponent = (function () {
 
 /***/ }),
 
-/***/ 517:
+/***/ 518:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -488,8 +581,8 @@ var AppPageDatasourcesComponent = (function () {
     AppPageDatasourcesComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: 'app-app-page-datasources',
-            template: __webpack_require__(703),
-            styles: [__webpack_require__(689)]
+            template: __webpack_require__(705),
+            styles: [__webpack_require__(691)]
         }), 
         __metadata('design:paramtypes', [])
     ], AppPageDatasourcesComponent);
@@ -499,7 +592,7 @@ var AppPageDatasourcesComponent = (function () {
 
 /***/ }),
 
-/***/ 518:
+/***/ 519:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -523,8 +616,8 @@ var AppPageFormsComponent = (function () {
     AppPageFormsComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: 'app-app-page-forms',
-            template: __webpack_require__(704),
-            styles: [__webpack_require__(690)]
+            template: __webpack_require__(706),
+            styles: [__webpack_require__(692)]
         }), 
         __metadata('design:paramtypes', [])
     ], AppPageFormsComponent);
@@ -534,7 +627,7 @@ var AppPageFormsComponent = (function () {
 
 /***/ }),
 
-/***/ 519:
+/***/ 520:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -558,8 +651,8 @@ var AppPageListsComponent = (function () {
     AppPageListsComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: 'app-app-page-lists',
-            template: __webpack_require__(705),
-            styles: [__webpack_require__(691)]
+            template: __webpack_require__(707),
+            styles: [__webpack_require__(693)]
         }), 
         __metadata('design:paramtypes', [])
     ], AppPageListsComponent);
@@ -569,7 +662,7 @@ var AppPageListsComponent = (function () {
 
 /***/ }),
 
-/***/ 520:
+/***/ 521:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -593,8 +686,8 @@ var AppPageModelsComponent = (function () {
     AppPageModelsComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: 'app-app-page-models',
-            template: __webpack_require__(706),
-            styles: [__webpack_require__(692)]
+            template: __webpack_require__(708),
+            styles: [__webpack_require__(694)]
         }), 
         __metadata('design:paramtypes', [])
     ], AppPageModelsComponent);
@@ -604,7 +697,7 @@ var AppPageModelsComponent = (function () {
 
 /***/ }),
 
-/***/ 521:
+/***/ 522:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -628,8 +721,8 @@ var AppPageSigninComponent = (function () {
     AppPageSigninComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: "app-page-signin",
-            template: __webpack_require__(707),
-            styles: [__webpack_require__(693)]
+            template: __webpack_require__(709),
+            styles: [__webpack_require__(695)]
         }), 
         __metadata('design:paramtypes', [])
     ], AppPageSigninComponent);
@@ -639,7 +732,7 @@ var AppPageSigninComponent = (function () {
 
 /***/ }),
 
-/***/ 522:
+/***/ 523:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -663,8 +756,8 @@ var AppPageViewsComponent = (function () {
     AppPageViewsComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: 'app-app-page-views',
-            template: __webpack_require__(708),
-            styles: [__webpack_require__(694)]
+            template: __webpack_require__(710),
+            styles: [__webpack_require__(696)]
         }), 
         __metadata('design:paramtypes', [])
     ], AppPageViewsComponent);
@@ -674,7 +767,7 @@ var AppPageViewsComponent = (function () {
 
 /***/ }),
 
-/***/ 523:
+/***/ 524:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -699,8 +792,8 @@ var AppPageComponent = (function () {
     AppPageComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: "app-page",
-            template: __webpack_require__(709),
-            styles: [__webpack_require__(695)]
+            template: __webpack_require__(711),
+            styles: [__webpack_require__(697)]
         }), 
         __metadata('design:paramtypes', [])
     ], AppPageComponent);
@@ -710,19 +803,13 @@ var AppPageComponent = (function () {
 
 /***/ }),
 
-/***/ 524:
+/***/ 525:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__signin_service__ = __webpack_require__(150);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__base_component__ = __webpack_require__(219);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SigninComponent; });
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__signin_service__ = __webpack_require__(104);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SignedinGuardService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -734,47 +821,67 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
+var SignedinGuardService = (function () {
+    function SignedinGuardService(_signinService) {
+        this._signinService = _signinService;
+        //
+    }
+    SignedinGuardService.prototype.canActivate = function () {
+        return this._signinService.isAuthenticated;
+    };
+    SignedinGuardService = __decorate([
+        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Injectable */])(), 
+        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__signin_service__["a" /* SigninService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__signin_service__["a" /* SigninService */]) === 'function' && _a) || Object])
+    ], SignedinGuardService);
+    return SignedinGuardService;
+    var _a;
+}());
+//# sourceMappingURL=D:/TfsOnlineGit/247UP - FormGeneratorApp - AdminSite/src/adminsite/src/signedin-guard.service.js.map
 
-var SigninComponent = (function (_super) {
-    __extends(SigninComponent, _super);
-    function SigninComponent(_zone, signinService) {
-        var _this = this;
-        _super.call(this, signinService);
-        this._zone = _zone;
-        this.googleLoginButtonId = "google-login-button";
-        this.onGoogleLoginSuccess = function (loggedInUser) {
-            _this._zone.run(function () {
-                _this.signinService.idToken = loggedInUser.getAuthResponse().id_token;
-                _this.signinService.userDisplayName = loggedInUser.getBasicProfile().getName();
-                _this.signinService.isAuthenticated = true;
-                console.log("idToken: " + _this.signinService.idToken);
-                console.log("userDisplayName: " + _this.signinService.userDisplayName);
-            });
-        };
+/***/ }),
+
+/***/ 526:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__signin_service__ = __webpack_require__(104);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SigninComponent; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+var SigninComponent = (function () {
+    function SigninComponent(_signinService) {
+        this._signinService = _signinService;
+        //
     }
     SigninComponent.prototype.ngAfterViewInit = function () {
-        gapi.signin2.render(this.googleLoginButtonId, {
-            "onSuccess": this.onGoogleLoginSuccess,
-            "scope": "profile",
-            "theme": "dark"
-        });
+        this._signinService.renderGoogleButton();
     };
     SigninComponent = __decorate([
         __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_4" /* Component */])({
             selector: "app-signin",
-            template: __webpack_require__(710),
-            styles: [__webpack_require__(696)]
+            template: __webpack_require__(712),
+            styles: [__webpack_require__(698)]
         }), 
-        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* NgZone */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_0__angular_core__["Q" /* NgZone */]) === 'function' && _a) || Object, (typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__signin_service__["a" /* SigninService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__signin_service__["a" /* SigninService */]) === 'function' && _b) || Object])
+        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__signin_service__["a" /* SigninService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__signin_service__["a" /* SigninService */]) === 'function' && _a) || Object])
     ], SigninComponent);
     return SigninComponent;
-    var _a, _b;
-}(__WEBPACK_IMPORTED_MODULE_2__base_component__["a" /* BaseComponent */]));
+    var _a;
+}());
 //# sourceMappingURL=D:/TfsOnlineGit/247UP - FormGeneratorApp - AdminSite/src/adminsite/src/signin.component.js.map
 
 /***/ }),
 
-/***/ 525:
+/***/ 527:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -784,20 +891,6 @@ var environment = {
     serviceUrl: "http://247up-kmregistratie-service-tst.azurewebsites.net"
 };
 //# sourceMappingURL=D:/TfsOnlineGit/247UP - FormGeneratorApp - AdminSite/src/adminsite/src/environment.prod.js.map
-
-/***/ }),
-
-/***/ 685:
-/***/ (function(module, exports) {
-
-module.exports = ""
-
-/***/ }),
-
-/***/ 686:
-/***/ (function(module, exports) {
-
-module.exports = ""
 
 /***/ }),
 
@@ -860,7 +953,7 @@ module.exports = ""
 /***/ 695:
 /***/ (function(module, exports) {
 
-module.exports = ""
+module.exports = "#signin-wrapper {\r\n    position: relative;\r\n    top: 10px;\r\n    border-top-color: #00C6FF;\r\n    border-top-width: 1px;\r\n    border-top-style: solid;\r\n    border-bottom-color: #00C6FF;\r\n    border-bottom-width: 1px;\r\n    border-bottom-style: solid;\r\n    width: 270px;\r\n    height: 100px;\r\n    margin-left: auto;\r\n    margin-right: auto;\r\n    margin-top: auto;\r\n    margin-bottom: auto;\r\n    padding: 25px;\r\n}"
 
 /***/ }),
 
@@ -871,97 +964,111 @@ module.exports = ""
 
 /***/ }),
 
-/***/ 699:
+/***/ 697:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"wrapper\" [style.padding-left]=\"isAuthenticated ? '225px':'0'\">\r\n    <app-navigation></app-navigation>\r\n    <section [style.display]=\"isAuthenticated ? 'initial' : 'none' \">\r\n        <router-outlet></router-outlet>\r\n    </section>\r\n    <app-page-signin *ngIf=\"!isAuthenticated\"></app-page-signin>\r\n</div>"
+module.exports = ""
 
 /***/ }),
 
-/***/ 700:
+/***/ 698:
 /***/ (function(module, exports) {
 
-module.exports = "<nav class=\"navbar navbar-inverse navbar-fixed-top\" role=\"navigation\">\r\n    <!-- Brand and toggle get grouped for better mobile display -->\r\n    <div class=\"navbar-header\">\r\n        <button type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-ex1-collapse\">\r\n            <span class=\"sr-only\">Toggle navigation</span>\r\n            <span class=\"icon-bar\"></span>\r\n            <span class=\"icon-bar\"></span>\r\n            <span class=\"icon-bar\"></span>\r\n        </button>\r\n        <a class=\"navbar-brand\" routerLink=\"/\"><b style=\"color:#00C6FF\">247</b><i style=\"color: white\">UP</i> - <b style=\"color:white\">FORM</b><small><i>GENERATOR</i></small></a>\r\n    </div>\r\n    <!-- Top Menu Items -->\r\n    <ul *ngIf=\"isAuthenticated\" class=\"nav navbar-right top-nav\">\r\n        <li class=\"dropdown\">\r\n            <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\"><i class=\"fa fa-user\"></i> {{userDisplayName}} <b class=\"caret\"></b></a>\r\n            <ul class=\"dropdown-menu\">\r\n                <li>\r\n                    <a href=\"#\"><i class=\"fa fa-fw fa-user\"></i> Profile</a>\r\n                </li>\r\n                <li class=\"divider\"></li>\r\n                <li>\r\n                    <a (click)=\"signOut()\" href=\"#\"><i class=\"fa fa-fw fa-power-off\"></i> Log Out</a>\r\n                </li>\r\n            </ul>\r\n        </li>\r\n    </ul>\r\n    <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->\r\n    <div *ngIf=\"isAuthenticated\" class=\"collapse navbar-collapse navbar-ex1-collapse\">\r\n        <ul class=\"nav navbar-nav side-nav\">\r\n            <app-vert-navigation-item link=\"/\" icon=\"dashboard\" title=\"Dashboard\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/apps\" icon=\"cube\" title=\"Apps\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/datasources\" icon=\"database\" title=\"Datasources\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/models\" icon=\"cubes\" title=\"Models\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/views\" icon=\"eye\" title=\"Views\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/lists\" icon=\"table\" title=\"Lists\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/forms\" icon=\"hospital-o\" title=\"Forms\"></app-vert-navigation-item>\r\n        </ul>\r\n    </div>\r\n    <!-- /.navbar-collapse -->\r\n</nav>"
+module.exports = ""
 
 /***/ }),
 
 /***/ 701:
 /***/ (function(module, exports) {
 
-module.exports = "<li routerLinkActive=\"active\" [routerLinkActiveOptions]=\"{ exact: true }\">\r\n    <a routerLink=\"{{link}}\"><i class=\"fa fa-fw fa-{{icon}}\"></i> {{title}}</a>\r\n</li>"
+module.exports = "<div id=\"wrapper\" [style.padding-left]=\"isAuthenticated ? '':'0'\">\r\n    <app-navigation></app-navigation>\r\n    <section [style.display]=\"isAuthenticated ? 'initial' : 'none' \">\r\n        <router-outlet></router-outlet>\r\n    </section>\r\n    <app-page-signin *ngIf=\"!isAuthenticated\"></app-page-signin>\r\n</div>"
 
 /***/ }),
 
 /***/ 702:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Apps\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-cube\"></i> Apps\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
+module.exports = "<nav class=\"navbar navbar-inverse navbar-fixed-top\" role=\"navigation\">\r\n    <!-- Brand and toggle get grouped for better mobile display -->\r\n    <div class=\"navbar-header\">\r\n        <button *ngIf=\"isAuthenticated\" type=\"button\" class=\"navbar-toggle\" data-toggle=\"collapse\" data-target=\".navbar-ex1-collapse\">\r\n            <span class=\"sr-only\">Toggle navigation</span>\r\n            <span class=\"icon-bar\"></span>\r\n            <span class=\"icon-bar\"></span>\r\n            <span class=\"icon-bar\"></span>\r\n        </button>\r\n        <a class=\"navbar-brand\" routerLink=\"/\"><b style=\"color:#00C6FF\">247</b><i style=\"color: white\">UP</i> - <b style=\"color:white\">FORM</b><small><i>GEN</i></small></a>\r\n    </div>\r\n    <!-- Top Menu Items -->\r\n    <ul *ngIf=\"isAuthenticated\" class=\"nav navbar-right top-nav\">\r\n        <li class=\"dropdown\">\r\n            <a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\"><i class=\"fa fa-user\"></i> {{userDisplayName}} <b class=\"caret\"></b></a>\r\n            <ul class=\"dropdown-menu\">\r\n                <li>\r\n                    <a href=\"#\"><i class=\"fa fa-fw fa-user\"></i> Profile</a>\r\n                </li>\r\n                <li class=\"divider\"></li>\r\n                <li>\r\n                    <a (click)=\"signOut()\" href=\"#\"><i class=\"fa fa-fw fa-power-off\"></i> Log Out</a>\r\n                </li>\r\n            </ul>\r\n        </li>\r\n    </ul>\r\n    <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->\r\n    <div *ngIf=\"isAuthenticated\" class=\"collapse navbar-collapse navbar-ex1-collapse\">\r\n        <ul class=\"nav navbar-nav side-nav\">\r\n            <app-vert-navigation-item link=\"/\" icon=\"dashboard\" title=\"Dashboard\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/apps\" icon=\"cube\" title=\"Apps\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/datasources\" icon=\"database\" title=\"Datasources\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/models\" icon=\"cubes\" title=\"Models\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/views\" icon=\"eye\" title=\"Views\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/lists\" icon=\"table\" title=\"Lists\"></app-vert-navigation-item>\r\n            <app-vert-navigation-item link=\"/forms\" icon=\"hospital-o\" title=\"Forms\"></app-vert-navigation-item>\r\n        </ul>\r\n    </div>\r\n    <!-- /.navbar-collapse -->\r\n</nav>"
 
 /***/ }),
 
 /***/ 703:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Datasources\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-database\"></i> Datasources\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
+module.exports = "<li routerLinkActive=\"active\" [routerLinkActiveOptions]=\"{ exact: true }\">\r\n    <a routerLink=\"{{link}}\"><i class=\"fa fa-fw fa-{{icon}}\"></i> {{title}}</a>\r\n</li>"
 
 /***/ }),
 
 /***/ 704:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Forms\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-hospital-o\"></i> Forms\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
+module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Apps\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-cube\"></i> Apps\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
 
 /***/ }),
 
 /***/ 705:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Lists\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-table\"></i> Lists\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
+module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Datasources\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-database\"></i> Datasources\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
 
 /***/ }),
 
 /***/ 706:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Models\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-cubes\"></i> Models\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
+module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Forms\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-hospital-o\"></i> Forms\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
 
 /***/ }),
 
 /***/ 707:
 /***/ (function(module, exports) {
 
-module.exports = "<app-signin></app-signin>"
+module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Lists\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-table\"></i> Lists\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
 
 /***/ }),
 
 /***/ 708:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Views\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-eye\"></i> Views\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
+module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Models\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-cubes\"></i> Models\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
 
 /***/ }),
 
 /***/ 709:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Dashboard <small>Statistics Overview</small>\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-dashboard\"></i> Dashboard\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
+module.exports = "<div id=\"signin-wrapper\">\r\n    <app-signin></app-signin>\r\n</div>"
 
 /***/ }),
 
 /***/ 710:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"{{googleLoginButtonId}}\"></div>"
+module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Views\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li>\r\n                        <i class=\"fa fa-dashboard\"></i> <a routerLink=\"/\">Dashboard</a>\r\n                    </li>\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-eye\"></i> Views\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
 
 /***/ }),
 
-/***/ 732:
+/***/ 711:
+/***/ (function(module, exports) {
+
+module.exports = "<div id=\"page-wrapper\">\r\n    <div class=\"container-fluid\">\r\n        <!-- Page Heading -->\r\n        <div class=\"row\">\r\n            <div class=\"col-lg-12\">\r\n                <h1 class=\"page-header\">\r\n                    Dashboard <small>Statistics&nbsp;Overview</small>\r\n                </h1>\r\n                <ol class=\"breadcrumb\">\r\n                    <li class=\"active\">\r\n                        <i class=\"fa fa-dashboard\"></i> Dashboard\r\n                    </li>\r\n                </ol>\r\n            </div>\r\n        </div>\r\n        <!-- /.row -->\r\n    </div>\r\n    <!-- /.container-fluid -->\r\n</div>"
+
+/***/ }),
+
+/***/ 712:
+/***/ (function(module, exports) {
+
+module.exports = "<div id=\"google-login-button\"></div>"
+
+/***/ }),
+
+/***/ 734:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(388);
+module.exports = __webpack_require__(390);
 
 
 /***/ })
 
-},[732]);
+},[734]);
 //# sourceMappingURL=main.bundle.map
